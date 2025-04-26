@@ -40,7 +40,23 @@
     }
   ],
   "esmodules": [
-    "scripts/core.js"
+	  "scripts/utils.js",
+	  "scripts/uuid-defs.js",
+	  "scripts/settings-manager.js",
+	  "scripts/effect-engine.js",
+	  "scripts/arousal-manager.js",
+	  "scripts/lust-engine.js",
+	  "scripts/perception-engine.js",
+	  "scripts/flavor-engine.js",
+	  "scripts/combat-control.js",
+	  "scripts/attire-system.js",
+	  "scripts/attire-utils.js",
+	  "scripts/attire-tags.js",
+	  "scripts/fertility-engine.js",
+	  "scripts/pregnancy-engine.js",
+	  "scripts/sheet-injector.js",
+	  "scripts/hooks.js",
+	  "scripts/core.js"
   ],
   "packs": [
     {
