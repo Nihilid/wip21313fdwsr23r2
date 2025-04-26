@@ -1,5 +1,6 @@
 // core.js
 
+import { LustEngine } from "./lust-engine.js";
 import { SettingsManager, isPerceptionEnabled } from "./settings-manager.js";
 import { ArousalManager } from "./arousal-manager.js";
 import { PerceptionEngine } from "./perception-engine.js";
@@ -22,6 +23,7 @@ Hooks.once("ready", async function () {
   SettingsManager.registerSettings();
 
   // Initialize system modules
+  LustEngine.initialize();
   ArousalManager.initialize();
   PerceptionEngine.initialize();
 
