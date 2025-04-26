@@ -104,3 +104,15 @@ export function getDecayImmunityDuration() {
 export function getWhisperOrgasmMessages() {
   return game.settings.get(MODULE_NAME, "whisperOrgasmMessages");
 }
+
+export function isPerceptionEnabled() {
+  return game.settings.get(MODULE_NAME, "enablePerceptionEngine");
+}
+
+export function getPerceptionDetectionRange() {
+  return game.settings.get(MODULE_NAME, "perceptionDetectionRange");
+}
+
+export function getPerceptionLustGain() {
+  return game.settings.get(MODULE_NAME, "perceptionLustGain");
+}
