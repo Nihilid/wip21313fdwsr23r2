@@ -15,6 +15,10 @@ Hooks.once("ready", () => {
   
   ArousalManager.initialize();
 
+  import { registerHooks } from "./hooks.js";
+  
+  registerHooks();
+
   // Simple Calendar Hook
   Hooks.on("simple-calendar-date-time-change", async (data) => {
     if (!data || typeof data.diff !== "number") return;
