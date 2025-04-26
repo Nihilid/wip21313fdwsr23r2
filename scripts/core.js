@@ -1,10 +1,20 @@
 // core.js
 
-import { LustEngine } from "./lust-engine.js";
+// Utility and Base Constants First
 import { SettingsManager, isPerceptionEnabled } from "./settings-manager.js";
+
+// Core Systems (engines)
 import { ArousalManager } from "./arousal-manager.js";
+import { LustEngine } from "./lust-engine.js";
+// import { EffectEngine } from "./effect-engine.js";
+
+// Specialized Systems
 import { PerceptionEngine } from "./perception-engine.js";
-import { registerHooks } from "./hooks.js"; // Passive hooks (stimulation overflow, etc.)
+// import { FlavorEngine } from "./flavor-engine.js"; // If flavor needs to be initialized separately
+// import { CombatControl } from "./combat-control.js";
+
+// Hooks
+import { registerHooks } from "./hooks.js";
 
 const MODULE_NAME = "dungeons-and-degenerates-pf2e";
 
