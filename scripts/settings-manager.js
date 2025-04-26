@@ -52,32 +52,32 @@ export class SettingsManager {
       default: true
     });
   
-      game.settings.register(MODULE_NAME, "enablePerceptionEngine", {
-    name: "Enable NPC Perception Reactions",
-    hint: "If enabled, NPCs will gain Lust when they detect exposed PCs.",
-    scope: "world",
-    config: true,
-    type: Boolean,
-    default: true
-  });
-  
-  game.settings.register(MODULE_NAME, "perceptionDetectionRange", {
-    name: "NPC Detection Range",
-    hint: "The distance (in feet) within which NPCs can detect exposed PCs.",
-    scope: "world",
-    config: true,
-    type: Number,
-    default: 30
-  });
-  
-  game.settings.register(MODULE_NAME, "perceptionLustGain", {
-    name: "NPC Lust Gain Amount",
-    hint: "Amount of Lust NPCs gain when perceiving an exposed PC.",
-    scope: "world",
-    config: true,
-    type: Number,
-    default: 1
-  });
+        game.settings.register(MODULE_NAME, "enablePerceptionEngine", {
+      name: "Enable NPC Perception Reactions",
+      hint: "If enabled, NPCs will gain Lust when they detect exposed PCs.",
+      scope: "world",
+      config: true,
+      type: Boolean,
+      default: true
+    });
+    
+    game.settings.register(MODULE_NAME, "perceptionDetectionRange", {
+      name: "NPC Detection Range",
+      hint: "The distance (in feet) within which NPCs can detect exposed PCs.",
+      scope: "world",
+      config: true,
+      type: Number,
+      default: 30
+    });
+    
+    game.settings.register(MODULE_NAME, "perceptionLustGain", {
+      name: "NPC Lust Gain Amount",
+      hint: "Amount of Lust NPCs gain when perceiving an exposed PC.",
+      scope: "world",
+      config: true,
+      type: Number,
+      default: 1
+    });
 
 
     console.log("[D&Degenerates] ✅ Settings registered");
