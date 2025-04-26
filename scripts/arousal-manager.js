@@ -13,9 +13,9 @@
  */
 
 import { applyEffect, removeEffect } from "./effect-engine.js";
-import { getSetting } from "./settings-manager.js";
+import { getArousalThreshold, getStimDecayRate, getOrgasmResistanceDC } from "./settings-manager.js";
 import { clampValue, validateActor } from "./utils.js";
-import { BAR_MAPPING } from "./constants.js"; // New constants file, assumed.
+import { BAR_MAPPING } from "./constants.js";
 
 const MODULE_NAME = "dungeons-and-degenerates-pf2e";
 
@@ -36,7 +36,6 @@ export class ArousalManager {
     const newValue = clampValue(current + amount, 0, 100);
     await ArousalManager.updateBar(actor, BAR_MAPPING.AROUSAL, newValue);
     
-    // Check for Orgasm or Effects
     await ArousalManager.checkArousalThresholds(actor, newValue);
   }
 
@@ -52,8 +51,47 @@ export class ArousalManager {
     const newValue = clampValue(current + amount, 0, 100);
     await ArousalManager.updateBar(actor, BAR_MAPPING.STIMULATION, newValue);
 
-    // Check for Orgasm Trigger
-    if (newValue >= 100) {
+    await ArousalManager.monitorStimulation(actor);
+  }
+
+  /**
+   * Monitors stimulation for overflow (100).
+   * @param {Actor} actor 
+   */
+  static async monitorStimulation(actor) {
+    if (!validateActor(actor)) return;
+
+    const stim = ArousalManager.getBarValue(actor, BAR_MAPPING.STIMULATION);
+    if (stim >= 100) {
+      await ArousalManager.handleOrgasmResistance(actor);
+    }
+  }
+
+  /**
+   * Handles orgasm resistance save.
+   * @param {Actor} actor 
+   */
+  static async handleOrgasmResistance(actor) {
+    if (!validateActor(actor)) return;
+
+    try {
+      const fortSave = await actor.saves.fortitude?.roll({ skipDialog: true });
+      if (!fortSave) {
+        console.warn(`[D&Degenerates] ❌ No Fortitude save available for ${actor.name}.`);
+        await ArousalManager.handleOrgasm(actor);
+        return;
+      }
+
+      const dc = getOrgasmResistanceDC() || 25;
+      if (fortSave.total < dc) {
+        console.log(`[D&Degenerates] 😵 ${actor.name} failed orgasm resistance (rolled ${fortSave.total} vs DC ${dc})`);
+        await ArousalManager.handleOrgasm(actor);
+      } else {
+        console.log(`[D&Degenerates] 😈 ${actor.name} resisted orgasm (rolled ${fortSave.total} vs DC ${dc})`);
+        // (Optional) apply "On Edge" effect here later if we want
+      }
+    } catch (err) {
+      console.error(`[D&Degenerates] ❌ Error during orgasm resistance check:`, err);
       await ArousalManager.handleOrgasm(actor);
     }
   }
@@ -110,13 +148,30 @@ export class ArousalManager {
    * @param {number} arousal 
    */
   static async checkArousalThresholds(actor, arousal) {
-    const threshold = getSetting("arousalThreshold") ?? 75;
-    const effectUUID = "Compendium.dungeons-and-degenerates-pf2e.degenerate-effects.Item.LCFosympIlNUW6SK"; // Example: Aroused
+    const threshold = getArousalThreshold() ?? 75;
+    const effectUUID = "Compendium.dungeons-and-degenerates-pf2e.degenerate-effects.Item.LCFosympIlNUW6SK"; // Aroused effect
 
     if (arousal >= threshold) {
       await applyEffect(actor, effectUUID);
     } else {
       await removeEffect(actor, effectUUID);
+    }
+  }
+
+  /**
+   * Decays stimulation for all actors over time.
+   */
+  static async handleTimeProgression() {
+    for (const actor of game.actors.contents) {
+      if (!validateActor(actor)) continue;
+
+      const currentStim = ArousalManager.getBarValue(actor, BAR_MAPPING.STIMULATION) || 0;
+      const decayRate = getStimDecayRate() || 5;
+
+      const newStim = Math.max(currentStim - decayRate, 0);
+      await ArousalManager.updateBar(actor, BAR_MAPPING.STIMULATION, newStim);
+
+      await ArousalManager.monitorStimulation(actor);
     }
   }
 }
