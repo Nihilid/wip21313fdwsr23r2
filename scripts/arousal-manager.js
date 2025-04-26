@@ -12,11 +12,9 @@
  * - bar5: Stimulation
  */
 
-console.log("[D&Degenerates] 🧠 Top of arousal-manager.js reached!");
-
 import { applyEffect, removeEffect } from "./effect-engine.js";
 import { getArousalThreshold, getStimDecayRate, getOrgasmResistanceDC, getDecayImmunityDuration } from "./settings-manager.js";
-import { clampValue, validateActor, updateBar, getBarValue } from "./utils.js";
+import { clampValue, validateActor, updateBar, getBarValue, detectGender } from "./utils.js";
 import { BAR_MAPPING } from "./constants.js";
 import { FlavorEngine } from "./flavor-engine.js";
 
@@ -30,7 +28,7 @@ export class ArousalManager {
   static async increaseArousal(actor, amount) {
     if (!validateActor(actor)) return;
 
-    const current = ArousalManager.getBarValue(actor, BAR_MAPPING.AROUSAL) || 0;
+    const current = getBarValue(actor, BAR_MAPPING.AROUSAL) || 0;
     const newValue = clampValue(current + amount, 0, 100);
     await updateBar(actor, BAR_MAPPING.AROUSAL, newValue);
     
@@ -40,13 +38,12 @@ export class ArousalManager {
   static async increaseStimulation(actor, amount) {
     if (!validateActor(actor)) return;
 
-    // 🔥 Adjust stimulation gain if male
-    const gender = actor.system.traits.gender?.value || "neutral";
+    const gender = detectGender(actor);
     if (gender === "male") {
-      amount *= 0.5; // Male characters gain stimulation slower
+      amount *= 0.5; // Males gain stimulation slower
     }
 
-    const current = ArousalManager.getBarValue(actor, BAR_MAPPING.STIMULATION) || 0;
+    const current = getBarValue(actor, BAR_MAPPING.STIMULATION) || 0;
     const newValue = clampValue(current + amount, 0, 100);
     await updateBar(actor, BAR_MAPPING.STIMULATION, newValue);
 
@@ -56,7 +53,7 @@ export class ArousalManager {
   static async monitorStimulation(actor) {
     if (!validateActor(actor)) return;
 
-    const stim = ArousalManager.getBarValue(actor, BAR_MAPPING.STIMULATION);
+    const stim = getBarValue(actor, BAR_MAPPING.STIMULATION);
     if (stim >= 100) {
       await ArousalManager.handleOrgasmResistance(actor);
     }
@@ -65,8 +62,7 @@ export class ArousalManager {
   static async handleOrgasmResistance(actor) {
     if (!validateActor(actor)) return;
 
-    // 🔥 Restrict orgasm saves: Only if female and molested
-    const gender = actor.system.traits.gender?.value || "neutral";
+    const gender = detectGender(actor);
     const isMolested = actor?.effects?.some(e => e.slug === "molested") ?? false;
 
     if (gender !== "female" || !isMolested) {
@@ -102,14 +98,12 @@ export class ArousalManager {
 
     await updateBar(actor, BAR_MAPPING.STIMULATION, 0);
 
-    // 🔥 Set Decay Immunity Timer
     const now = game.time.worldTime;
     const immunityMinutes = getDecayImmunityDuration() || 10;
     await actor.setFlag(MODULE_NAME, "lastOrgasmTime", now);
     await actor.setFlag(MODULE_NAME, "decayImmunityUntil", now + (immunityMinutes * 60));
 
-    // Apply orgasm effect
-    const gender = actor.system.traits.gender?.value || "neutral";
+    const gender = detectGender(actor);
     const isEjaculating = (gender === "male");
 
     const orgasmEffect = isEjaculating
@@ -117,8 +111,18 @@ export class ArousalManager {
       : "Compendium.dungeons-and-degenerates-pf2e.degenerate-effects.Item.rvqKrcRPi3g6wCFX";
 
     await applyEffect(actor, orgasmEffect);
-
     await FlavorEngine.sendOrgasmMessage(actor, isEjaculating);
+  }
+
+  static async checkArousalThresholds(actor, arousal) {
+    const threshold = getArousalThreshold() ?? 75;
+    const effectUUID = "Compendium.dungeons-and-degenerates-pf2e.degenerate-effects.Item.LCFosympIlNUW6SK";
+
+    if (arousal >= threshold) {
+      await applyEffect(actor, effectUUID);
+    } else {
+      await removeEffect(actor, effectUUID);
+    }
   }
 
   static async handleTimeProgression() {
@@ -133,15 +137,12 @@ export class ArousalManager {
         continue;
       }
 
-      const currentStim = ArousalManager.getBarValue(actor, BAR_MAPPING.STIMULATION) || 0;
+      const currentStim = getBarValue(actor, BAR_MAPPING.STIMULATION) || 0;
       const decayRate = getStimDecayRate() || 5;
       const newStim = Math.max(currentStim - decayRate, 0);
 
       await updateBar(actor, BAR_MAPPING.STIMULATION, newStim);
-
       await ArousalManager.monitorStimulation(actor);
     }
   }
-
-  // (Rest of the unchanged methods remain the same)
 }
