@@ -1,5 +1,7 @@
 // core.js
 
+console.log(`[D&Degenerates] 🧠 Reached very top of core.js file.`);
+
 // Utility and Base Constants First
 import { SettingsManager, isPerceptionEnabled } from "./settings-manager.js";
 
@@ -9,7 +11,7 @@ import { LustEngine } from "./lust-engine.js";
 // import { EffectEngine } from "./effect-engine.js";
 
 // Specialized Systems
-import { PerceptionEngine } from "./perception-engine.js";
+// import { PerceptionEngine } from "./perception-engine.js";
 // import { FlavorEngine } from "./flavor-engine.js"; // If flavor needs to be initialized separately
 // import { CombatControl } from "./combat-control.js";
 
@@ -17,10 +19,6 @@ import { PerceptionEngine } from "./perception-engine.js";
 import { registerHooks } from "./hooks.js";
 
 const MODULE_NAME = "dungeons-and-degenerates-pf2e";
-
-Hooks.once("init", async function () {
-  console.log(`[D&Degenerates] 🧠 Reached very top of core.js file.`);
-});
 
 Hooks.once("setup", async function () {
   console.log(`[D&Degenerates] ⚙️ Setting up D&Degenerates systems...`);
