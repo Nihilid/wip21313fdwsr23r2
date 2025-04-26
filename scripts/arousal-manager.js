@@ -12,6 +12,8 @@
  * - bar5: Stimulation
  */
 
+console.log("[D&Degenerates] 🧠 Top of arousal-manager.js reached!");
+
 import { applyEffect, removeEffect } from "./effect-engine.js";
 import { getArousalThreshold, getStimDecayRate, getOrgasmResistanceDC, getDecayImmunityDuration } from "./settings-manager.js";
 import { clampValue, validateActor, updateBar, getBarValue } from "./utils.js";
@@ -30,7 +32,7 @@ export class ArousalManager {
 
     const current = ArousalManager.getBarValue(actor, BAR_MAPPING.AROUSAL) || 0;
     const newValue = clampValue(current + amount, 0, 100);
-    await ArousalManager.updateBar(actor, BAR_MAPPING.AROUSAL, newValue);
+    await updateBar(actor, BAR_MAPPING.AROUSAL, newValue);
     
     await ArousalManager.checkArousalThresholds(actor, newValue);
   }
@@ -46,7 +48,7 @@ export class ArousalManager {
 
     const current = ArousalManager.getBarValue(actor, BAR_MAPPING.STIMULATION) || 0;
     const newValue = clampValue(current + amount, 0, 100);
-    await ArousalManager.updateBar(actor, BAR_MAPPING.STIMULATION, newValue);
+    await updateBar(actor, BAR_MAPPING.STIMULATION, newValue);
 
     await ArousalManager.monitorStimulation(actor);
   }
@@ -98,7 +100,7 @@ export class ArousalManager {
   static async handleOrgasm(actor) {
     console.log(`[D&Degenerates] 💦 Orgasm triggered for ${actor.name}`);
 
-    await ArousalManager.updateBar(actor, BAR_MAPPING.STIMULATION, 0);
+    await updateBar(actor, BAR_MAPPING.STIMULATION, 0);
 
     // 🔥 Set Decay Immunity Timer
     const now = game.time.worldTime;
@@ -135,7 +137,7 @@ export class ArousalManager {
       const decayRate = getStimDecayRate() || 5;
       const newStim = Math.max(currentStim - decayRate, 0);
 
-      await ArousalManager.updateBar(actor, BAR_MAPPING.STIMULATION, newStim);
+      await updateBar(actor, BAR_MAPPING.STIMULATION, newStim);
 
       await ArousalManager.monitorStimulation(actor);
     }
