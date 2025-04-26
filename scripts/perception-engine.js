@@ -93,7 +93,7 @@ export class PerceptionEngine {
     const lustGain = getPerceptionLustGain();
     if (npcToken?.actor) {
       await LustEngine.increaseLust(npcToken.actor, lustGain);
-    console.log(`[D&Degenerates] ❤️ NPC ${npcToken.name} gains ${lustGain} Lust from PC exposure.`);
+      console.log(`[D&Degenerates] ❤️ NPC ${npcToken.name} gains ${lustGain} Lust from PC exposure.`);
 
     // TODO: Hook into Lust Engine for actual Lust bar adjustment
     // Example: LustEngine.increaseLust(npcToken.actor, lustGain);
