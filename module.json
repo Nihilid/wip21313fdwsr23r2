@@ -1,0 +1,80 @@
+{
+  "id": "dungeons-and-degenerates-pf2e",
+  "title": "Dungeons & Degenerates PF2e",
+  "version": "1.0.0",
+  "compatibility": {
+    "minimum": "12",
+    "verified": "12"
+  },
+  "relationships": {
+    "requires": [
+      {
+        "id": "foundryvtt-simple-calendar",
+        "type": "module",
+        "compatibility": {}
+      },
+      {
+        "id": "barbrawl",
+        "type": "module",
+        "compatibility": {}
+      },
+      {
+        "id": "grid-aware-auras",
+        "type": "module",
+        "compatibility": {}
+      }
+    ],
+    "systems": [
+      {
+        "id": "pf2e",
+        "type": "system",
+        "compatibility": {}
+      }
+    ]
+  },
+  "authors": [
+    {
+      "name": "Nihilid",
+      "discord": "nihilid",
+      "flags": {}
+    }
+  ],
+  "esmodules": [
+    "scripts/core.js"
+  ],
+  "packs": [
+    {
+      "name": "degenerate-effects",
+      "label": "Degenerate Effects",
+      "path": "packs/degenerate-effects",
+      "type": "Item",
+      "system": "pf2e",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "degenerate-macros",
+      "label": "Degenerate Macros",
+      "path": "packs/degenerate-macros",
+      "type": "Item",
+      "system": "pf2e",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      }
+    },
+    {
+      "name": "degenerate-actions",
+      "label": "Degenerate Actions",
+      "path": "packs/degenerate-actions",
+      "type": "Item",
+      "ownership": {
+        "PLAYER": "OBSERVER",
+        "ASSISTANT": "OWNER"
+      },
+      "system": "pf2e"
+    }
+  ]
+}
