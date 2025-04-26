@@ -1,37 +1,43 @@
-console.log("[D&Degenerates] 🧠 Reached very top of core.js file.");
+// core.js
 
-import { registerHooks } from "./hooks.js";
+import { SettingsManager, isPerceptionEnabled } from "./settings-manager.js";
 import { ArousalManager } from "./arousal-manager.js";
-import { SettingsManager } from "./settings-manager.js";
 import { PerceptionEngine } from "./perception-engine.js";
+import { registerHooks } from "./hooks.js"; // Passive hooks (stimulation overflow, etc.)
 
 const MODULE_NAME = "dungeons-and-degenerates-pf2e";
 
-Hooks.once("init", () => {
-  console.log(`[D&Degenerates] ✅ Initializing module`);
-  
-  SettingsManager.registerSettings();
+Hooks.once("init", async function () {
+  console.log(`[D&Degenerates] 🧠 Reached very top of core.js file.`);
 });
 
-Hooks.once("ready", () => {
-  console.log(`[D&Degenerates] ✅ Ready hook fired`);
-  
+Hooks.once("setup", async function () {
+  console.log(`[D&Degenerates] ⚙️ Setting up D&Degenerates systems...`);
+});
+
+Hooks.once("ready", async function () {
+  console.log(`[D&Degenerates] ✅ Initializing D&Degenerates core systems.`);
+
+  // Register all D&Degenerates settings
+  SettingsManager.registerSettings();
+
+  // Initialize system modules
   ArousalManager.initialize();
-
-  // Simple Calendar Hook
-  Hooks.on("simple-calendar-date-time-change", async (data) => {
-    if (!data || typeof data.diff !== "number") return;
-
-    // Only act if at least 1 in-game minute has passed
-    if (Math.abs(data.diff) >= 60) {
-      console.log(`[D&Degenerates] 🕑 In-game minute passed, applying stimulation decay`);
-      await ArousalManager.handleTimeProgression();
-    }
-  });
-  
   PerceptionEngine.initialize();
 
+  // Register passive hooks (token updates, bar5 stimulation overflow, etc.)
   registerHooks();
 
-  console.log(`[D&Degenerates] ✅ Stimulation decay hook registered`);
+  console.log(`[D&Degenerates] ✅ Core systems initialization complete.`);
+});
+
+// Simple Calendar minute-tick integration
+Hooks.on("simple-calendar-date-time-change", (diff) => {
+  if (diff >= 60) { // 60 seconds = 1 in-game minute
+    ArousalManager.handleTimeProgression();
+
+    if (isPerceptionEnabled()) {
+      PerceptionEngine.handleExposureCheck();
+    }
+  }
 });
