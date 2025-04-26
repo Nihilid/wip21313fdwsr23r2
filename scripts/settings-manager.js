@@ -32,11 +32,31 @@ export class SettingsManager {
       default: 25
     });
 
+    // 🔥 New: Decay Immunity Duration after orgasm
+    game.settings.register(MODULE_NAME, "decayImmunityDuration", {
+      name: "Decay Immunity Duration",
+      hint: "Number of in-game minutes after orgasm before stimulation decay resumes.",
+      scope: "world",
+      config: true,
+      type: Number,
+      default: 10
+    });
+
+    // 🔥 New: Orgasm Message Whisper Toggle
+    game.settings.register(MODULE_NAME, "whisperOrgasmMessages", {
+      name: "Whisper Orgasm Messages to GM Only",
+      hint: "If enabled, orgasm/resistance messages are only visible to the GM instead of public chat.",
+      scope: "world",
+      config: true,
+      type: Boolean,
+      default: true
+    });
+
     console.log("[D&Degenerates] ✅ Settings registered");
   }
 }
 
-// 🧠 SETTINGS GETTERS (for subsystems to use)
+// 🧠 SETTINGS GETTERS
 export function getArousalThreshold() {
   return game.settings.get(MODULE_NAME, "arousalThreshold");
 }
@@ -47,4 +67,12 @@ export function getStimDecayRate() {
 
 export function getOrgasmResistanceDC() {
   return game.settings.get(MODULE_NAME, "orgasmResistanceDC");
+}
+
+export function getDecayImmunityDuration() {
+  return game.settings.get(MODULE_NAME, "decayImmunityDuration");
+}
+
+export function getWhisperOrgasmMessages() {
+  return game.settings.get(MODULE_NAME, "whisperOrgasmMessages");
 }
