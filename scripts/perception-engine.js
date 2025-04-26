@@ -1,5 +1,6 @@
 // perception-engine.js
 import { isPerceptionEnabled, getPerceptionDetectionRange, getPerceptionLustGain } from "./settings-manager.js";
+import { LustEngine } from "./lust-engine.js";
 
 const MODULE_NAME = "dungeons-and-degenerates-pf2e";
 
@@ -90,6 +91,8 @@ export class PerceptionEngine {
    */
   static async applyLustGain(npcToken) {
     const lustGain = getPerceptionLustGain();
+    if (npcToken?.actor) {
+      await LustEngine.increaseLust(npcToken.actor, lustGain);
     console.log(`[D&Degenerates] ❤️ NPC ${npcToken.name} gains ${lustGain} Lust from PC exposure.`);
 
     // TODO: Hook into Lust Engine for actual Lust bar adjustment
