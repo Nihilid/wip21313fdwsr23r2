@@ -1,40 +1,50 @@
 // settings-manager.js
-// Centralized interface for accessing and updating system settings
+const MODULE_NAME = "dungeons-and-degenerates-pf2e";
 
-import { MODULE_ID } from './settings.js';
-import { logDebug } from './utils.js';
+export class SettingsManager {
+  static registerSettings() {
+    console.log("[D&Degenerates] ✅ Registering module settings");
 
-export function getSetting(key) {
-  try {
-    return game.settings.get(MODULE_ID, key);
-  } catch (error) {
-    logDebug(`❌ Failed to get setting '${key}':`, error);
-    return undefined;
+    game.settings.register(MODULE_NAME, "arousalThreshold", {
+      name: "Arousal Threshold",
+      hint: "The Arousal % required to trigger 'Aroused' effects.",
+      scope: "world",
+      config: true,
+      type: Number,
+      default: 75
+    });
+
+    game.settings.register(MODULE_NAME, "stimDecayRate", {
+      name: "Stimulation Decay Rate",
+      hint: "Amount Stimulation decreases per in-game minute.",
+      scope: "world",
+      config: true,
+      type: Number,
+      default: 5
+    });
+
+    game.settings.register(MODULE_NAME, "orgasmResistanceDC", {
+      name: "Orgasm Resistance DC",
+      hint: "DC for Fortitude saves to resist orgasm when Stimulation reaches 100.",
+      scope: "world",
+      config: true,
+      type: Number,
+      default: 25
+    });
+
+    console.log("[D&Degenerates] ✅ Settings registered");
   }
 }
 
-export function setSetting(key, value) {
-  try {
-    return game.settings.set(MODULE_ID, key, value);
-  } catch (error) {
-    logDebug(`❌ Failed to set setting '${key}' to '${value}':`, error);
-  }
+// 🧠 SETTINGS GETTERS (for subsystems to use)
+export function getArousalThreshold() {
+  return game.settings.get(MODULE_NAME, "arousalThreshold");
 }
 
-export function registerSettings(definitions = []) {
-  for (const def of definitions) {
-    try {
-      game.settings.register(MODULE_ID, def.name, def);
-    } catch (error) {
-      logDebug(`❌ Failed to register setting '${def.name}':`, error);
-    }
-  }
+export function getStimDecayRate() {
+  return game.settings.get(MODULE_NAME, "stimDecayRate");
 }
 
-// Optional: utility to get all current values
-export function getAllSettings(keys = []) {
-  return keys.reduce((acc, key) => {
-    acc[key] = getSetting(key);
-    return acc;
-  }, {});
+export function getOrgasmResistanceDC() {
+  return game.settings.get(MODULE_NAME, "orgasmResistanceDC");
 }
