@@ -14,7 +14,7 @@
 
 import { applyEffect, removeEffect } from "./effect-engine.js";
 import { getArousalThreshold, getStimDecayRate, getOrgasmResistanceDC, getDecayImmunityDuration } from "./settings-manager.js";
-import { clampValue, validateActor } from "./utils.js";
+import { clampValue, validateActor, updateBar, getBarValue } from "./utils.js";
 import { BAR_MAPPING } from "./constants.js";
 import { FlavorEngine } from "./flavor-engine.js";
 
