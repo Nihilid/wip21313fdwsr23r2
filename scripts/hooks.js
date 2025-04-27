@@ -3,7 +3,7 @@
 import { ArousalManager } from "./arousal-manager.js";
 import { PerceptionEngine } from "./perception-engine.js";
 import { LustEngine } from "./lust-engine.js";
-import { AttireSystem } from "./attire-system.js"; // ✅ New!
+import { AttireSystem } from "./attire-system.js";
 import { isPerceptionEnabled } from "./settings.js";
 
 const MODULE_NAME = "dungeons-and-degenerates-pf2e";
