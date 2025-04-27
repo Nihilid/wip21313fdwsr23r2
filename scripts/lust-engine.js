@@ -1,101 +1,112 @@
-// perception-engine.js
-import { isPerceptionEnabled, getPerceptionDetectionRange, getPerceptionLustGain } from "./settings.js";
-import { LustEngine } from "./lust-engine.js";
+// lust-engine.js
 
+import { clampValue } from "./utils.js";
+import { LustThreshold } from "./lust-threshold.js";
 const MODULE_NAME = "dungeons-and-degenerates-pf2e";
 
-export class PerceptionEngine {
+export class LustEngine {
   static initialize() {
-    console.log(`[D&Degenerates] ✅ Perception Engine initialized`);
+    console.log(`[D&Degenerates] ✅ Lust Engine initialized`);
   }
 
   /**
-   * Called every in-game minute by the Simple Calendar event.
-   * Scans exposed PCs and applies Lust influence to nearby NPCs.
+   * Increases an actor's Lust by a specified amount, respecting Libido minimum.
    */
-  static async handleExposureCheck() {
-    if (!isPerceptionEnabled()) return;
+static async increaseLust(actor, amount) {
+  if (!actor || !actor.isOwner) {
+    console.warn(`[D&Degenerates] ⚠️ increaseLust called with invalid actor.`);
+    return;
+  }
 
-    for (const pc of game.actors.contents.filter(a => a.hasPlayerOwner && a.type === "character")) {
-      if (!PerceptionEngine.isExposed(pc)) continue;
-      if (await PerceptionEngine.isHiddenFromAll(pc)) continue;
+  const token = actor.getActiveTokens(true, true)[0];
+  if (!token) {
+    console.warn(`[D&Degenerates] ⚠️ increaseLust: No active token for actor ${actor.name}.`);
+    return;
+  }
 
-      const nearbyNPCs = PerceptionEngine.getNearbyNPCs(pc);
+  const current = LustEngine.getCurrentLust(actor);
+  const libido = LustEngine.getLibido(actor);
+  const threshold = LustThreshold.calculateThreshold(actor);
 
-      for (const npc of nearbyNPCs) {
-        await PerceptionEngine.applyLustGain(npc);
-      }
+  // Only allow Lust to increase up to the calculated threshold
+  const targetLust = Math.min(current + amount, threshold);
+
+  if (targetLust <= current) {
+    console.log(`[D&Degenerates] 🧘 ${actor.name} is at or above their Lust Threshold (${threshold}), no passive Lust gain applied.`);
+    return; // Already at or above threshold — no gain.
+  }
+
+  await token.update({ [`flags.barbrawl.resourceBars.bar3.value`]: targetLust });
+
+  console.log(`[D&Degenerates] 🔥 Increased Lust for ${actor.name}: ${current} → ${targetLust} (Threshold: ${threshold})`);
+}
+
+  /**
+   * Decreases an actor's Lust by a specified amount, respecting Libido minimum.
+   */
+  static async decreaseLust(actor, amount) {
+    if (!actor || !actor.isOwner) {
+      console.warn(`[D&Degenerates] ⚠️ decreaseLust called with invalid actor.`);
+      return;
     }
-  }
 
-  /**
-   * Placeholder for full attire-exposure.js integration.
-   * Returns true if the PC is considered exposed.
-   */
-  static isExposed(actor) {
-    // TODO: Hook into attire-exposure.js exposure check
-    // For now: assume PCs are always exposed for testing
-    return true;
-  }
-
-  /**
-   * Determines if the PC is concealed, hidden, unnoticed, or undetected to all nearby enemies.
-   */
-  static async isHiddenFromAll(actor) {
     const token = actor.getActiveTokens(true, true)[0];
-    if (!token) return true;
-
-    for (const npc of canvas.tokens.placeables.filter(t => t.actor && !t.actor.hasPlayerOwner)) {
-      if (await PerceptionEngine.isVisibleTo(token, npc)) {
-        return false; // At least one NPC can see them
-      }
+    if (!token) {
+      console.warn(`[D&Degenerates] ⚠️ decreaseLust: No active token for actor ${actor.name}.`);
+      return;
     }
-    return true;
+
+    const current = LustEngine.getCurrentLust(actor);
+    const libido = LustEngine.getLibido(actor);
+
+    const newLust = clampValue(current - amount, libido, 100);
+
+    await token.update({ [`flags.barbrawl.resourceBars.bar3.value`]: newLust });
+
+    console.log(`[D&Degenerates] 🧊 Decreased Lust for ${actor.name}: ${current} → ${newLust}`);
   }
 
   /**
-   * Check if an observer token perceives the target token.
-   * Integrates with PF2e Perception module if available.
+   * Sets an actor's Lust to a specific value, respecting Libido minimum.
    */
-  static async isVisibleTo(targetToken, observerToken) {
-    if (!targetToken || !observerToken) return false;
-
-    if (game.modules.get("pf2e-perception")?.active && game.pf2eperception?.api) {
-      // Use PF2e Perception module visibility check
-      const result = await game.pf2eperception.api.checkVisibility(observerToken, targetToken);
-      return result?.visible ?? false;
-    } else {
-      // Fallback: Assume visible if within 30ft range
-      const distance = canvas.grid.measureDistance(observerToken, targetToken);
-      return distance <= 30;
+  static async setLust(actor, value) {
+    if (!actor || !actor.isOwner) {
+      console.warn(`[D&Degenerates] ⚠️ setLust called with invalid actor.`);
+      return;
     }
+
+    const token = actor.getActiveTokens(true, true)[0];
+    if (!token) {
+      console.warn(`[D&Degenerates] ⚠️ setLust: No active token for actor ${actor.name}.`);
+      return;
+    }
+
+    const libido = LustEngine.getLibido(actor);
+
+    const newLust = clampValue(value, libido, 100);
+
+    await token.update({ [`flags.barbrawl.resourceBars.bar3.value`]: newLust });
+
+    console.log(`[D&Degenerates] 🎯 Set Lust for ${actor.name} to ${newLust}`);
   }
 
   /**
-   * Returns all NPCs within configured perception range of the PC.
+   * Gets the current Lust value from the actor.
    */
-  static getNearbyNPCs(pcActor) {
-    const range = getPerceptionDetectionRange();
-    const token = pcActor.getActiveTokens(true, true)[0];
-    if (!token) return [];
+  static getCurrentLust(actor) {
+    const token = actor.getActiveTokens(true, true)[0];
+    if (!token) return 0;
 
-    return canvas.tokens.placeables.filter(npc => {
-      if (!npc.actor || npc.actor.hasPlayerOwner) return false;
-      const distance = canvas.grid.measureDistance(token, npc);
-      return distance <= range;
-    });
+    return getProperty(token, `flags.barbrawl.resourceBars.bar3.value`) ?? 0;
   }
 
   /**
-   * Applies Lust gain to an NPC influenced by exposure.
+   * Gets the Libido minimum value from the actor.
    */
-  static async applyLustGain(npcToken) {
-    const lustGain = getPerceptionLustGain();
-    if (npcToken?.actor) {
-      await LustEngine.increaseLust(npcToken.actor, lustGain);
-      console.log(`[D&Degenerates] ❤️ NPC ${npcToken.name} gains ${lustGain} Lust from PC exposure.`);
+  static getLibido(actor) {
+    const token = actor.getActiveTokens(true, true)[0];
+    if (!token) return 0;
 
-    // TODO: Hook into Lust Engine for actual Lust bar adjustment
-    // Example: LustEngine.increaseLust(npcToken.actor, lustGain);
+    return getProperty(token, `flags.barbrawl.resourceBars.bar4.value`) ?? 0;
   }
 }
