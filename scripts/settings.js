@@ -1,4 +1,5 @@
 // settings.js
+
 const MODULE_NAME = "dungeons-and-degenerates-pf2e";
 
 export class Settings {
