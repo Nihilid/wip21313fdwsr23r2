@@ -1,7 +1,7 @@
 // settings.js
 const MODULE_NAME = "dungeons-and-degenerates-pf2e";
 
-export class SettingsManager {
+export class Settings {
   static registerSettings() {
     console.log("[D&Degenerates] ✅ Registering module settings");
 
