@@ -3,6 +3,7 @@
 import { ArousalManager } from "./arousal-manager.js";
 import { PerceptionEngine } from "./perception-engine.js";
 import { LustEngine } from "./lust-engine.js";
+import { AttireSystem } from "./attire-system.js"; // ✅ New!
 import { isPerceptionEnabled } from "./settings.js";
 
 const MODULE_NAME = "dungeons-and-degenerates-pf2e";
@@ -10,7 +11,7 @@ const MODULE_NAME = "dungeons-and-degenerates-pf2e";
 export function registerHooks() {
   console.log(`[D&Degenerates] ✅ Registering passive hooks`);
 
-  // Handle stimulation decay, Lust gain, and Lust correction per in-game minute
+  // Passive time advancement (Simple Calendar)
   Hooks.on("simple-calendar-date-time-change", (payload) => {
     const secondsElapsed = payload.diff ?? 0;
     const minutesElapsed = secondsElapsed / 60;
@@ -26,7 +27,7 @@ export function registerHooks() {
     }
   });
 
-  // Clamp Lust to Libido immediately on token updates
+  // Lust clamping on token update
   Hooks.on("updateToken", async (tokenDocument, updateData, options, userId) => {
     const actor = tokenDocument.actor;
     if (!actor || !actor.hasPlayerOwner) return;
@@ -39,9 +40,10 @@ export function registerHooks() {
       await tokenDocument.update({ [`flags.barbrawl.resourceBars.bar3.value`]: libido });
     }
   });
-  
-  Hooks.on("combatRoundEnd", async () => {
-  await AttireSystem.checkRoundMalfunctions();
-});
 
+  // ✅ NEW: Combat Round End → Wardrobe Malfunction Check
+  Hooks.on("combatRoundEnd", async () => {
+    console.log(`[D&Degenerates] 🔥 Combat Round End: Checking wardrobe malfunctions...`);
+    await AttireSystem.checkRoundMalfunctions();
+  });
 }
