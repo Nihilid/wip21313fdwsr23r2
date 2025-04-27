@@ -15,11 +15,10 @@ export class AttireSystem {
       const actor = token.actor;
 
       const coverage = actor.flags?.["dungeons-and-degenerates-pf2e"]?.coverage || {};
-
       const vulnerableRegions = Object.keys(BODY_REGIONS).filter(regionKey => {
         const regionId = BODY_REGIONS[regionKey].id;
         const regionCoverage = coverage[regionId] ?? 100;
-        return regionCoverage > 0; // Only regions with some protection
+        return regionCoverage > 0 && regionCoverage <= 60;
       });
 
       if (vulnerableRegions.length === 0) continue;
