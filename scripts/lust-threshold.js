@@ -8,7 +8,7 @@
  */
 
 import { BODY_REGIONS } from "./bodymap.js";
-import { EXPOSURE_SEVERITY, EXPOSURE_VALUES } from "./exposure.js";
+import { EXPOSURE_SEVERITY, EXPOSURE_VALUES } from "./attire-exposure.js";
 
 const MODULE_NAME = "dungeons-and-degenerates-pf2e";
 
