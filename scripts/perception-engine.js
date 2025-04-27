@@ -1,4 +1,5 @@
 // perception-engine.js
+
 import { isPerceptionEnabled, getPerceptionDetectionRange, getPerceptionLustGain } from "./settings.js";
 import { LustEngine } from "./lust-engine.js";
 
@@ -13,20 +14,34 @@ export class PerceptionEngine {
    * Called every in-game minute by the Simple Calendar event.
    * Scans exposed PCs and applies Lust influence to nearby NPCs.
    */
-  static async handleExposureCheck() {
-    if (!isPerceptionEnabled()) return;
+static async handleExposureCheck() {
+  if (!isPerceptionEnabled()) return;
+  console.log("[D&Degenerates] 🛠️ handleExposureCheck running exposure scan...");
 
-    for (const pc of game.actors.contents.filter(a => a.hasPlayerOwner && a.type === "character")) {
-      if (!PerceptionEngine.isExposed(pc)) continue;
-      if (await PerceptionEngine.isHiddenFromAll(pc)) continue;
+  for (const token of canvas.tokens.placeables.filter(t => t.actor && t.actor.hasPlayerOwner && t.actor.type === "character")) {
+    const pc = token.actor;
+    console.log(`[D&Degenerates] 🧠 Evaluating PC: ${pc.name}`);
 
-      const nearbyNPCs = PerceptionEngine.getNearbyNPCs(pc);
+    if (!PerceptionEngine.isExposed(pc)) {
+      console.log(`[D&Degenerates] 🚫 PC ${pc.name} is not exposed, skipping.`);
+      continue;
+    }
 
-      for (const npc of nearbyNPCs) {
-        await PerceptionEngine.applyLustGain(npc);
-      }
+    if (await PerceptionEngine.isHiddenFromAll(pc)) {
+      console.log(`[D&Degenerates] 🚫 PC ${pc.name} is hidden from all NPCs, skipping.`);
+      continue;
+    }
+
+    const nearbyNPCs = PerceptionEngine.getNearbyNPCs(pc);
+    console.log(`[D&Degenerates] 👀 Found ${nearbyNPCs.length} NPCs near ${pc.name}.`);
+
+    for (const npc of nearbyNPCs) {
+      console.log(`[D&Degenerates] 🔥 Applying Lust to NPC: ${npc.name}`);
+      await PerceptionEngine.applyLustGain(npc);
     }
   }
+
+}
 
   /**
    * Placeholder for full attire-exposure.js integration.
@@ -91,11 +106,11 @@ export class PerceptionEngine {
    */
   static async applyLustGain(npcToken) {
     const lustGain = getPerceptionLustGain();
-    if (npcToken?.actor) {
+     if (npcToken?.actor) {
       await LustEngine.increaseLust(npcToken.actor, lustGain);
       console.log(`[D&Degenerates] ❤️ NPC ${npcToken.name} gains ${lustGain} Lust from PC exposure.`);
-
-    // TODO: Hook into Lust Engine for actual Lust bar adjustment
-    // Example: LustEngine.increaseLust(npcToken.actor, lustGain);
+    }
+  // TODO: Hook into Lust Engine for actual Lust bar adjustment
+  // Example: LustEngine.increaseLust(npcToken.actor, lustGain);
   }
 }
