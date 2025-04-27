@@ -1,5 +1,5 @@
 // flavor-engine.js
-import { getWhisperOrgasmMessages } from "./settings-manager.js";
+import { getWhisperOrgasmMessages } from "./settings.js";
 import { playCummingAudio, playEjaculatingAudio } from "./sound-engine.js"; // New modular sound manager!
 
 const MODULE_NAME = "dungeons-and-degenerates-pf2e";
