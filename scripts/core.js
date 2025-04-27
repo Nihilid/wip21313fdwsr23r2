@@ -3,7 +3,7 @@
 console.log(`[D&Degenerates] 🧠 Reached very top of core.js file.`);
 
 // Utility and Base Constants First
-import { SettingsManager, isPerceptionEnabled } from "./settings-manager.js";
+import { SettingsManager, isPerceptionEnabled } from "./settings.js";
 
 // Core Systems (engines)
 import { ArousalManager } from "./arousal-manager.js";
@@ -11,7 +11,7 @@ import { LustEngine } from "./lust-engine.js";
 // import { EffectEngine } from "./effect-engine.js";
 
 // Specialized Systems
-// import { PerceptionEngine } from "./perception-engine.js";
+import { PerceptionEngine } from "./perception-engine.js";
 // import { FlavorEngine } from "./flavor-engine.js"; // If flavor needs to be initialized separately
 // import { CombatControl } from "./combat-control.js";
 
