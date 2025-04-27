@@ -45,21 +45,31 @@ export class LustEngine {
    * @param {Actor} actor 
    */
   static async passiveLustCorrection(actor) {
-    if (!validateActor(actor)) return;
+    if (!validateActor(actor)) {
+      console.log(`[D&Degenerates] ❌ passiveLustCorrection skipped invalid actor.`);
+      return;
+    }
 
     const token = actor.getActiveTokens(true, true)[0];
-    if (!token) return;
+    if (!token) {
+      console.log(`[D&Degenerates] ❌ passiveLustCorrection skipped: No active token for actor ${actor.name}.`);
+      return;
+    }
 
     const currentLust = LustEngine.getCurrentLust(actor);
     const libido = LustEngine.getLibido(actor);
 
+    console.log(`[D&Degenerates] 🔍 Checking Passive Lust: ${actor.name} | Current Lust: ${currentLust} | Libido: ${libido}`);
+
     if (currentLust < libido) {
-      const increase = 1; // 1 Lust per minute passive climb
+      const increase = 1; // Passive climb rate
       const newLust = Math.min(currentLust + increase, libido);
 
       await token.update({ [`flags.barbrawl.resourceBars.bar3.value`]: newLust });
 
       console.log(`[D&Degenerates] 💓 Passive Lust correction for ${actor.name}: ${currentLust} → ${newLust}`);
+    } else {
+      console.log(`[D&Degenerates] 🧘 Passive Lust: ${actor.name} is already at or above Libido, no correction needed.`);
     }
   }
 
