@@ -1,5 +1,5 @@
 // perception-engine.js
-import { isPerceptionEnabled, getPerceptionDetectionRange, getPerceptionLustGain } from "./settings-manager.js";
+import { isPerceptionEnabled, getPerceptionDetectionRange, getPerceptionLustGain } from "./settings.js";
 import { LustEngine } from "./lust-engine.js";
 
 const MODULE_NAME = "dungeons-and-degenerates-pf2e";
