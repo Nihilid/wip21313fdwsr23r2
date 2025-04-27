@@ -39,4 +39,9 @@ export function registerHooks() {
       await tokenDocument.update({ [`flags.barbrawl.resourceBars.bar3.value`]: libido });
     }
   });
+  
+  Hooks.on("combatRoundEnd", async () => {
+  await AttireSystem.checkRoundMalfunctions();
+});
+
 }
