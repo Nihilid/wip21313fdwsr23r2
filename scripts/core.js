@@ -3,16 +3,16 @@
 console.log(`[D&Degenerates] 🧠 Reached very top of core.js file.`);
 
 // Utility and Base Constants First
-import { SettingsManager, isPerceptionEnabled } from "./settings.js";
+import { Settings, isPerceptionEnabled } from "./settings.js";
 
 // Core Systems (engines)
 import { ArousalManager } from "./arousal-manager.js";
 import { LustEngine } from "./lust-engine.js";
-// import { EffectEngine } from "./effect-engine.js";
+import { EffectEngine } from "./effect-engine.js";
 
 // Specialized Systems
 import { PerceptionEngine } from "./perception-engine.js";
-// import { FlavorEngine } from "./flavor-engine.js"; // If flavor needs to be initialized separately
+import { FlavorEngine } from "./flavor-engine.js";
 // import { CombatControl } from "./combat-control.js";
 
 // Hooks
@@ -28,7 +28,7 @@ Hooks.once("ready", async function () {
   console.log(`[D&Degenerates] ✅ Initializing D&Degenerates core systems.`);
 
   // Register all D&Degenerates settings
-  SettingsManager.registerSettings();
+  Settings.registerSettings();
 
   // Initialize system modules
   LustEngine.initialize();
@@ -42,8 +42,14 @@ Hooks.once("ready", async function () {
 });
 
 // Simple Calendar minute-tick integration
-Hooks.on("simple-calendar-date-time-change", (diff) => {
-  if (diff >= 60) { // 60 seconds = 1 in-game minute
+Hooks.on("simple-calendar-date-time-change", (payload) => {
+  console.log(`[D&Degenerates] 🕒 simple-calendar-date-time-change hook triggered, payload =`, payload);
+
+  const secondsElapsed = payload.diff ?? 0;
+  const minutesElapsed = secondsElapsed / 60;
+
+  if (minutesElapsed >= 1) {
+    console.log(`[D&Degenerates] 🕒 Time advanced by ${minutesElapsed} minutes.`);
     ArousalManager.handleTimeProgression();
 
     if (isPerceptionEnabled()) {
@@ -51,3 +57,5 @@ Hooks.on("simple-calendar-date-time-change", (diff) => {
     }
   }
 });
+
+
