@@ -2,7 +2,7 @@
 
 import { clampValue, validateActor } from "./utils.js";
 import { BAR_MAPPING } from "./constants.js";
-import { SettingsManager, isPerceptionEnabled } from "./settings.js";
+import { Settings, isPerceptionEnabled } from "./settings.js";
 import { LustThreshold } from "./lust-threshold.js";
 
 const MODULE_NAME = "dungeons-and-degenerates-pf2e";
