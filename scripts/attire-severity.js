@@ -14,11 +14,11 @@ import { BODY_REGIONS } from "./attire-bodymap.js";
  * minor < moderate < severe
  */
 export const EXPOSURE_SEVERITY = {
-  [BODY_REGIONS.CHEST.id]: "minor",
+  [BODY_REGIONS.CHEST.id]: "moderate",
   [BODY_REGIONS.GROIN.id]: "severe",
-  [BODY_REGIONS.ASS.id]: "moderate",
-  [BODY_REGIONS.BELLY.id]: "minor",
-  [BODY_REGIONS.THIGHS.id]: "moderate" // ✅ New region added
+  [BODY_REGIONS.ASS.id]: "minor",
+  [BODY_REGIONS.ABDOMEN.id]: "minor",
+  [BODY_REGIONS.THIGHS.id]: "minor" // ✅ New region added
 };
 
 /**
