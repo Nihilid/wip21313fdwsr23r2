@@ -46,10 +46,10 @@ export class AttireSystem {
    * @returns {number}
    */
   static calculateMalfunctionChance(coverage) {
-    if (coverage >= 90) return 2;   // Very low chance
-    if (coverage >= 60) return 5;    // Low-moderate chance
-    if (coverage >= 30) return 10;   // Moderate chance
-    return 20;                       // High chance for nearly naked
+    if (coverage > 50) return 5;   // Barely slipping
+    if (coverage > 35) return 7;   // Slightly slipping
+    if (coverage > 20) return 10;  // Moderate slipping
+    return 15;                     // Severe chaos
   }
 
   /**
