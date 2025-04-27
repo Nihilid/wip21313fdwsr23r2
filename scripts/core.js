@@ -41,21 +41,4 @@ Hooks.once("ready", async function () {
   console.log(`[D&Degenerates] ✅ Core systems initialization complete.`);
 });
 
-// Simple Calendar minute-tick integration
-Hooks.on("simple-calendar-date-time-change", (payload) => {
-  console.log(`[D&Degenerates] 🕒 simple-calendar-date-time-change hook triggered, payload =`, payload);
-
-  const secondsElapsed = payload.diff ?? 0;
-  const minutesElapsed = secondsElapsed / 60;
-
-  if (minutesElapsed >= 1) {
-    console.log(`[D&Degenerates] 🕒 Time advanced by ${minutesElapsed} minutes.`);
-    ArousalManager.handleTimeProgression();
-
-    if (isPerceptionEnabled()) {
-      PerceptionEngine.handleExposureCheck();
-    }
-  }
-});
-
 
