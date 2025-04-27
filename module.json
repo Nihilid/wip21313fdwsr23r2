@@ -42,7 +42,7 @@
   "esmodules": [
 	  "scripts/utils.js",
 	  "scripts/uuid-defs.js",
-	  "scripts/settings-manager.js",
+	  "scripts/settings.js",
 	  "scripts/effect-engine.js",
 	  "scripts/arousal-manager.js",
 	  "scripts/lust-engine.js",
