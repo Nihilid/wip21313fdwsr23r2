@@ -1,69 +1,71 @@
 // effect-engine.js
-import { validateActor } from "./utils.js";
+// [D&Degenerates] Manages sexual condition effects: Raped, Wombfucked, Scrawled, and related applications/removals
 
-const MODULE_NAME = "dungeons-and-degenerates-pf2e";
+import { EventSystem } from "./event-system.js";
+import { logDebug } from "./utils.js";
+import { UUID_DEFS } from "./uuid-defs.js";
 
-export class EffectEngine {
-  /**
-   * Apply an effect to an actor by UUID.
-   * @param {Actor} actor
-   * @param {string} effectUUID
-   */
-  static async applyEffect(actor, effectUUID) {
-    if (!validateActor(actor)) return;
-    if (!effectUUID) {
-      console.warn(`[D&Degenerates] ⚠️ No effect UUID provided for application.`);
+export const EffectEngine = {
+
+  async applyEffect(actor, effectUuid) {
+    if (!actor || !effectUuid) return;
+
+    const effect = await fromUuid(effectUuid);
+    if (!effect) {
+      console.error(`[D&Degenerates] Effect not found: ${effectUuid}`);
       return;
     }
 
-    try {
-      const effect = await fromUuid(effectUUID);
-      if (!effect) {
-        console.warn(`[D&Degenerates] ⚠️ Could not find effect for UUID: ${effectUUID}`);
-        return;
-      }
-
-      // Prevent duplicate effect
-      const existing = actor.itemTypes.effect.find(e => e.sourceId === effectUUID);
-      if (existing) {
-        console.log(`[D&Degenerates] ℹ️ Effect already present on actor: ${effect.name}`);
-        return;
-      }
-
-      await actor.createEmbeddedDocuments("Item", [effect.toObject()]);
-      console.log(`[D&Degenerates] ✅ Applied effect: ${effect.name} to ${actor.name}`);
-    } catch (err) {
-      console.error(`[D&Degenerates] ❌ Failed to apply effect:`, err);
-    }
-  }
-
-  /**
-   * Remove an effect from an actor by UUID.
-   * @param {Actor} actor
-   * @param {string} effectUUID
-   */
-  static async removeEffect(actor, effectUUID) {
-    if (!validateActor(actor)) return;
-    if (!effectUUID) {
-      console.warn(`[D&Degenerates] ⚠️ No effect UUID provided for removal.`);
+    const existing = actor.items.find(i => i.flags.core?.sourceId === effectUuid);
+    if (existing) {
+      logDebug(`[D&Degenerates] Effect already present on ${actor.name}: ${effect.name}`);
       return;
     }
 
-    try {
-      const existing = actor.itemTypes.effect.find(e => e.sourceId === effectUUID);
-      if (!existing) {
-        console.log(`[D&Degenerates] ℹ️ No existing effect found to remove for UUID: ${effectUUID}`);
-        return;
-      }
+    await actor.createEmbeddedDocuments("Item", [effect.toObject()]);
+    logDebug(`[D&Degenerates] Effect applied: ${effect.name} to ${actor.name}`);
+  },
 
-      await existing.delete();
-      console.log(`[D&Degenerates] ✅ Removed effect: ${existing.name} from ${actor.name}`);
-    } catch (err) {
-      console.error(`[D&Degenerates] ❌ Failed to remove effect:`, err);
+  async removeEffect(actor, effectUuid) {
+    if (!actor || !effectUuid) return;
+
+    const existing = actor.items.find(i => i.flags.core?.sourceId === effectUuid);
+    if (!existing) {
+      logDebug(`[D&Degenerates] No existing effect to remove from ${actor.name}: ${effectUuid}`);
+      return;
     }
-  }
-}
 
-// Convenience re-exports
-export const applyEffect = EffectEngine.applyEffect;
-export const removeEffect = EffectEngine.removeEffect;
+    await existing.delete();
+    logDebug(`[D&Degenerates] Effect removed: ${existing.name} from ${actor.name}`);
+  },
+
+};
+
+// Register EventSystem listeners for effects
+EventSystem.on("ApplyRapedEffect", async ({ actor }) => {
+  if (!actor) {
+    logDebug("[D&Degenerates] Skipping ApplyRapedEffect event due to missing actor.");
+    return;
+  }
+
+  try {
+    await EffectEngine.applyEffect(actor, UUID_DEFS.RAPED);
+    logDebug(`[D&Degenerates] ApplyRapedEffect event processed for ${actor.name}.`);
+  } catch (error) {
+    console.error("[D&Degenerates] Error processing ApplyRapedEffect event:", error);
+  }
+});
+
+EventSystem.on("ApplyWombfuckedEffect", async ({ actor }) => {
+  if (!actor) {
+    logDebug("[D&Degenerates] Skipping ApplyWombfuckedEffect event due to missing actor.");
+    return;
+  }
+
+  try {
+    await EffectEngine.applyEffect(actor, UUID_DEFS.WOMB_FUCKED);
+    logDebug(`[D&Degenerates] ApplyWombfuckedEffect event processed for ${actor.name}.`);
+  } catch (error) {
+    console.error("[D&Degenerates] Error processing ApplyWombfuckedEffect event:", error);
+  }
+});
