@@ -79,6 +79,16 @@ export class Settings {
       type: Number,
       default: 1
     });
+	
+	game.settings.register("dungeons-and-degenerates-pf2e", "debugMode", {
+	  name: "Enable Debug Logging",
+	  hint: "If enabled, additional debug messages will be printed to the console.",
+	  scope: "world",
+	  config: true,
+	  type: Boolean,
+	  default: false,
+	});
+
 
 
     console.log("[D&Degenerates] ✅ Settings registered");
