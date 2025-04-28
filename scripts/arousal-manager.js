@@ -1,148 +1,93 @@
-// Version: 1.0.9
-// Arousal Manager - Handles time-based stat changes for Dungeons & Degenerates
+// arousal-manager.js
+// [D&Degenerates] Manages stimulation decay, orgasm detection, arousal adjustments, and ejaculation triggers
 
-/**
- * ArousalManager handles progression of arousal-related stats over time.
- * Applies and removes relevant effects, and responds to token updates.
- *
- * Stats tracked:
- * - bar2: Arousal
- * - bar3: Lust
- * - bar4: Libido
- * - bar5: Stimulation
- */
+import { EventSystem } from "./event-system.js";
+import { logDebug, clamp } from "./utils.js";
+import { settings } from "./settings.js";
 
-import { applyEffect, removeEffect } from "./effect-engine.js";
-import { getArousalThreshold, getStimDecayRate, getOrgasmResistanceDC, getDecayImmunityDuration } from "./settings.js";
-import { clampValue, validateActor, updateBar, getBarValue, detectGender } from "./utils.js";
-import { BAR_MAPPING } from "./constants.js";
-import { FlavorEngine } from "./flavor-engine.js";
+export const ArousalManager = {
 
-const MODULE_NAME = "dungeons-and-degenerates-pf2e";
+  async increaseArousal(actor, amount) {
+    if (!actor || amount == null) return;
 
-export class ArousalManager {
-  static initialize() {
-    console.log("[D&Degenerates] ✅ ArousalManager initialized");
-  }
+    const current = actor.flags?.dndegen?.arousal || 0;
+    const newAmount = clamp(current + amount, 0, 100);
 
-  static async increaseArousal(actor, amount) {
-    if (!validateActor(actor)) return;
+    await actor.update({ "flags.dndegen.arousal": newAmount });
+    logDebug(`[D&Degenerates] Increased arousal for ${actor.name}: ${current} -> ${newAmount}`);
 
-    const current = getBarValue(actor, BAR_MAPPING.AROUSAL) || 0;
-    const newValue = clampValue(current + amount, 0, 100);
-    await updateBar(actor, BAR_MAPPING.AROUSAL, newValue);
-    
-    await ArousalManager.checkArousalThresholds(actor, newValue);
-  }
+    await this.checkOrgasm(actor, newAmount);
+  },
 
-  static async increaseStimulation(actor, amount) {
-    if (!validateActor(actor)) return;
+  async checkOrgasm(actor, arousalValue) {
+    if (!actor || arousalValue < 100) return;
 
-    const gender = detectGender(actor);
-    if (gender === "male") {
-      amount *= 0.5; // Males gain stimulation slower
+    logDebug(`[D&Degenerates] Orgasm triggered for ${actor.name}!`);
+
+    // Example: Reset arousal, trigger effects, etc.
+    await actor.update({ "flags.dndegen.arousal": 0 });
+    // Additional orgasm logic would be expanded here (e.g., ejaculation triggers)
+  },
+
+  async applyFondleStim(actor, region) {
+    if (!actor || !region) return;
+
+    let arousalGain = 5;
+    switch (region) {
+      case "breasts":
+        arousalGain = 8;
+        break;
+      case "pussy":
+        arousalGain = 10;
+        break;
+      case "belly":
+        arousalGain = 6;
+        break;
     }
 
-    const current = getBarValue(actor, BAR_MAPPING.STIMULATION) || 0;
-    const newValue = clampValue(current + amount, 0, 100);
-    await updateBar(actor, BAR_MAPPING.STIMULATION, newValue);
+    logDebug(`[D&Degenerates] Fondled region '${region}' on ${actor.name}, arousal gain: ${arousalGain}`);
+    await this.increaseArousal(actor, arousalGain);
+  },
 
-    await ArousalManager.monitorStimulation(actor);
+  async decayArousalOverTime(actor, minutesPassed) {
+    if (!actor || minutesPassed <= 0) return;
+
+    const decayRate = settings.arousalDecayRate() || 1;
+    const current = actor.flags?.dndegen?.arousal || 0;
+    const decayAmount = decayRate * minutesPassed;
+    const newAmount = clamp(current - decayAmount, 0, 100);
+
+    await actor.update({ "flags.dndegen.arousal": newAmount });
+    logDebug(`[D&Degenerates] Arousal decayed for ${actor.name}: ${current} -> ${newAmount}`);
+  },
+
+};
+
+// Register EventSystem listeners for arousal events
+EventSystem.on("IncreaseArousal", async ({ actor, amount }) => {
+  if (!actor || amount == null) {
+    logDebug("[D&Degenerates] Skipping IncreaseArousal event due to missing actor or amount.");
+    return;
   }
 
-  static async monitorStimulation(actor) {
-    if (!validateActor(actor)) return;
+  try {
+    await ArousalManager.increaseArousal(actor, amount);
+    logDebug(`[D&Degenerates] IncreaseArousal event processed for ${actor.name} (amount: ${amount}).`);
+  } catch (error) {
+    console.error("[D&Degenerates] Error processing IncreaseArousal event:", error);
+  }
+});
 
-    const stim = getBarValue(actor, BAR_MAPPING.STIMULATION);
-    if (stim >= 100) {
-      await ArousalManager.handleOrgasmResistance(actor);
-    }
+EventSystem.on("FondledRegion", async ({ source, target, region }) => {
+  if (!target || !region) {
+    logDebug("[D&Degenerates] Skipping FondledRegion event due to missing target or region.");
+    return;
   }
 
-  static async handleOrgasmResistance(actor) {
-    if (!validateActor(actor)) return;
-
-    const gender = detectGender(actor);
-    const isMolested = actor?.effects?.some(e => e.slug === "molested") ?? false;
-
-    if (gender !== "female" || !isMolested) {
-      console.log(`[D&Degenerates] ⚠️ Orgasm resistance skipped (not molested or not female): ${actor.name}`);
-      await ArousalManager.handleOrgasm(actor);
-      return;
-    }
-
-    try {
-      const fortSave = await actor.saves.fortitude?.roll({ skipDialog: true });
-      if (!fortSave) {
-        console.warn(`[D&Degenerates] ❌ No Fortitude save available for ${actor.name}.`);
-        await ArousalManager.handleOrgasm(actor);
-        return;
-      }
-
-      const dc = getOrgasmResistanceDC() || 25;
-      if (fortSave.total < dc) {
-        console.log(`[D&Degenerates] 😵 ${actor.name} failed orgasm resistance (rolled ${fortSave.total} vs DC ${dc})`);
-        await ArousalManager.handleOrgasm(actor);
-      } else {
-        console.log(`[D&Degenerates] 😈 ${actor.name} resisted orgasm (rolled ${fortSave.total} vs DC ${dc})`);
-        await FlavorEngine.sendResistMessage(actor);
-      }
-    } catch (err) {
-      console.error(`[D&Degenerates] ❌ Error during orgasm resistance check:`, err);
-      await ArousalManager.handleOrgasm(actor);
-    }
+  try {
+    await ArousalManager.applyFondleStim(target, region);
+    logDebug(`[D&Degenerates] FondledRegion event processed for ${target.name}, region: ${region}.`);
+  } catch (error) {
+    console.error("[D&Degenerates] Error processing FondledRegion event:", error);
   }
-
-  static async handleOrgasm(actor) {
-    console.log(`[D&Degenerates] 💦 Orgasm triggered for ${actor.name}`);
-
-    await updateBar(actor, BAR_MAPPING.STIMULATION, 0);
-
-    const now = game.time.worldTime;
-    const immunityMinutes = getDecayImmunityDuration() || 10;
-    await actor.setFlag(MODULE_NAME, "lastOrgasmTime", now);
-    await actor.setFlag(MODULE_NAME, "decayImmunityUntil", now + (immunityMinutes * 60));
-
-    const gender = detectGender(actor);
-    const isEjaculating = (gender === "male");
-
-    const orgasmEffect = isEjaculating
-      ? "Compendium.dungeons-and-degenerates-pf2e.degenerate-effects.Item.zXZ2wXVYVTuET8MY"
-      : "Compendium.dungeons-and-degenerates-pf2e.degenerate-effects.Item.rvqKrcRPi3g6wCFX";
-
-    await applyEffect(actor, orgasmEffect);
-    await FlavorEngine.sendOrgasmMessage(actor, isEjaculating);
-  }
-
-  static async checkArousalThresholds(actor, arousal) {
-    const threshold = getArousalThreshold() ?? 75;
-    const effectUUID = "Compendium.dungeons-and-degenerates-pf2e.degenerate-effects.Item.LCFosympIlNUW6SK";
-
-    if (arousal >= threshold) {
-      await applyEffect(actor, effectUUID);
-    } else {
-      await removeEffect(actor, effectUUID);
-    }
-  }
-
-  static async handleTimeProgression() {
-    for (const actor of game.actors.contents) {
-      if (!validateActor(actor)) continue;
-
-      const now = game.time.worldTime;
-      const immunityUntil = getProperty(actor, `flags.${MODULE_NAME}.decayImmunityUntil`) || 0;
-
-      if (now < immunityUntil) {
-        console.log(`[D&Degenerates] ⏳ Skipping stimulation decay for ${actor.name} (decay immunity active)`);
-        continue;
-      }
-
-      const currentStim = getBarValue(actor, BAR_MAPPING.STIMULATION) || 0;
-      const decayRate = getStimDecayRate() || 5;
-      const newStim = Math.max(currentStim - decayRate, 0);
-
-      await updateBar(actor, BAR_MAPPING.STIMULATION, newStim);
-      await ArousalManager.monitorStimulation(actor);
-    }
-  }
-}
+});
