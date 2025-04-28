@@ -3,6 +3,7 @@
 import { BODY_REGIONS } from "./attire-bodymap.js";
 import { playCummingAudio, playEjaculatingAudio } from "./sound-engine.js";
 import { EventSystem } from "./event-system.js";
+
 const MODULE_NAME = "dungeons-and-degenerates-pf2e";
 
 Hooks.once('ready', () => {
