@@ -13,7 +13,7 @@ import { EventSystem } from "./event-system.js";
 const MODULE_NAME = "dungeons-and-degenerates-pf2e";
 
 export class ArousalManager {
-  static init() {
+  static initiliaze() {
     console.log("[D&Degenerates] ✅ ArousalManager initialized");
 
     // Register EventSystem listeners
