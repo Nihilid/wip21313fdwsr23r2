@@ -21,6 +21,15 @@ import { FlavorEngine } from "./flavor-engine.js";
 
 const MODULE_NAME = "dungeons-and-degenerates-pf2e";
 
+import { EventSystem } from "./event-system.js";
+
+Hooks.once('ready', () => {
+  EventSystem.on("arousal.increase", ({ targetToken, amount }) => {
+    if (!targetToken || !targetToken.actor || typeof amount !== "number") return;
+    ArousalManager.increaseArousal(targetToken, amount);
+  });
+});
+
 export class ArousalManager {
 static initialize() {
 console.log("[D&Degenerates] ✅ ArousalManager initialized");
