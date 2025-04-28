@@ -4,6 +4,23 @@
 import { EventSystem } from "./event-system.js";
 import { logDebug } from "./utils.js";
 import { UUID_DEFS } from "./uuid-defs.js";
+import { EventSystem } from "./event-system.js";
+
+Hooks.once('ready', () => {
+  EventSystem.on("effect.apply", ({ targetToken, type }) => {
+    if (!targetToken || !targetToken.actor || !type) return;
+
+    switch (type) {
+      case "raped":
+        EffectEngine.applyRapedEffect(targetToken);
+        break;
+      case "wombfucked":
+        EffectEngine.applyWombfuckedEffect(targetToken);
+        break;
+      // Add more cases if needed later
+    }
+  });
+});
 
 export const EffectEngine = {
 
