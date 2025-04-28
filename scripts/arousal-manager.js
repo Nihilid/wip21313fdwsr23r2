@@ -7,46 +7,39 @@ import { settings } from "./settings.js";
 
 export const ArousalManager = {
 
-  async increaseArousal(actor, amount) {
-    if (!actor || amount == null) return;
+  async adjustArousalAndStimulation(actor, { arousal = 0, stimulation = 0 }) {
+    if (!actor) return;
 
-    const current = actor.flags?.dndegen?.arousal || 0;
-    const newAmount = clamp(current + amount, 0, 100);
+    const currentArousal = actor.flags?.dndegen?.arousal || 0;
+    const currentStim = actor.flags?.dndegen?.stimulation || 0;
 
-    await actor.update({ "flags.dndegen.arousal": newAmount });
-    logDebug(`[D&Degenerates] Increased arousal for ${actor.name}: ${current} -> ${newAmount}`);
+    const newArousal = clamp(currentArousal + arousal, 0, 100);
+    const newStim = clamp(currentStim + stimulation, 0, 100);
 
-    await this.checkOrgasm(actor, newAmount);
+    await actor.update({
+      "flags.dndegen.arousal": newArousal,
+      "flags.dndegen.stimulation": newStim,
+    });
+
+    logDebug(`[D&Degenerates] Arousal updated for ${actor.name}: ${currentArousal} -> ${newArousal}`);
+    logDebug(`[D&Degenerates] Stimulation updated for ${actor.name}: ${currentStim} -> ${newStim}`);
+
+    if (newStim >= 100) {
+      await this.triggerOrgasm(actor);
+    }
   },
 
-  async checkOrgasm(actor, arousalValue) {
-    if (!actor || arousalValue < 100) return;
+  async triggerOrgasm(actor) {
+    if (!actor) return;
 
     logDebug(`[D&Degenerates] Orgasm triggered for ${actor.name}!`);
 
-    // Example: Reset arousal, trigger effects, etc.
-    await actor.update({ "flags.dndegen.arousal": 0 });
-    // Additional orgasm logic would be expanded here (e.g., ejaculation triggers)
-  },
+    await actor.update({
+      "flags.dndegen.stimulation": 0,
+      // Optionally reset arousal here if desired
+    });
 
-  async applyFondleStim(actor, region) {
-    if (!actor || !region) return;
-
-    let arousalGain = 5;
-    switch (region) {
-      case "breasts":
-        arousalGain = 8;
-        break;
-      case "pussy":
-        arousalGain = 10;
-        break;
-      case "belly":
-        arousalGain = 6;
-        break;
-    }
-
-    logDebug(`[D&Degenerates] Fondled region '${region}' on ${actor.name}, arousal gain: ${arousalGain}`);
-    await this.increaseArousal(actor, arousalGain);
+    // Additional orgasm effect logic would be handled here
   },
 
   async decayArousalOverTime(actor, minutesPassed) {
@@ -63,7 +56,7 @@ export const ArousalManager = {
 
 };
 
-// Register EventSystem listeners for arousal events
+// Register EventSystem listeners for arousal and stimulation events
 EventSystem.on("IncreaseArousal", async ({ actor, amount }) => {
   if (!actor || amount == null) {
     logDebug("[D&Degenerates] Skipping IncreaseArousal event due to missing actor or amount.");
@@ -71,7 +64,7 @@ EventSystem.on("IncreaseArousal", async ({ actor, amount }) => {
   }
 
   try {
-    await ArousalManager.increaseArousal(actor, amount);
+    await ArousalManager.adjustArousalAndStimulation(actor, { arousal: amount });
     logDebug(`[D&Degenerates] IncreaseArousal event processed for ${actor.name} (amount: ${amount}).`);
   } catch (error) {
     console.error("[D&Degenerates] Error processing IncreaseArousal event:", error);
@@ -84,10 +77,30 @@ EventSystem.on("FondledRegion", async ({ source, target, region }) => {
     return;
   }
 
+  let arousalGain = 5;
+  let stimulationGain = 5;
+
+  switch (region) {
+    case "breasts":
+      arousalGain = 8;
+      stimulationGain = 5;
+      break;
+    case "pussy":
+      arousalGain = 10;
+      stimulationGain = 8;
+      break;
+    case "belly":
+      arousalGain = 6;
+      stimulationGain = 4;
+      break;
+  }
+
   try {
-    await ArousalManager.applyFondleStim(target, region);
+    await ArousalManager.adjustArousalAndStimulation(target, { arousal: arousalGain, stimulation: stimulationGain });
     logDebug(`[D&Degenerates] FondledRegion event processed for ${target.name}, region: ${region}.`);
   } catch (error) {
     console.error("[D&Degenerates] Error processing FondledRegion event:", error);
   }
 });
+
+// [D&Degenerates] ✅ ArousalManager now uses a universal adjuster for Arousal and Stimulation.
