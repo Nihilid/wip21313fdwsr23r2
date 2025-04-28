@@ -1,22 +1,23 @@
 // fertility-engine.js
 // Handles insemination, ovulation checks, fertilization chance, and pregnancy tracking
+import {applyTimedEffectFromUuid} from "./fertility-utils.js";
+import { getSetting } from "./settings-manager.js";
+import { EventSystem } from "./event-system.js";
+
+Hooks.once('ready', () => {
+  EventSystem.on("fertility.check", ({ sourceToken, targetToken }) => {
+    if (!sourceToken || !targetToken) return;
+    FertilityEngine.calculatePregnancyRisk(sourceToken, targetToken);
+  });
+});
 
 if (!attacker?.actor || !target?.actor) {
       logDebug("warn", "[D&Degenerates] ❌ Ejaculation skipped — missing attacker or target actor.");if (!actor || !actor.itemTypes?.effect) {
       logDebug("warn", "[D&Degenerates] ❌ scanForFertilization skipped — missing actor or effects.");|| !wombEffect) {
       logDebug("warn", "[D&Degenerates] ❌ Sperm decay skipped — missing actor or womb effect.");
-
-import {
-  $1,
-  applyTimedEffectFromUuid
-} from "./fertility-utils.js";
-import { getSetting } from "./settings-manager.js";
-
-/**
- * FertilityEngine tracks sperm, ovum, and pregnancy state over time.
- * Handles fertilization logic, ejaculate tracking, and gestation progression.
- */
+            
 export class FertilityEngine {
+      
   // Decays sperm stored in the womb over time, adds leaking flavor, and recalculates belly fullness
   /**
    * Decay womb-stored sperm, update belly fullness, and apply leaking effects.
