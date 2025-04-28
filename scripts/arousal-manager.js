@@ -24,7 +24,7 @@ const MODULE_NAME = "dungeons-and-degenerates-pf2e";
 Hooks.once('ready', () => {
   EventSystem.on("arousal.increase", ({ targetToken, amount }) => {
     if (!targetToken || !targetToken.actor || typeof amount !== "number") return;
-    ArousalManager.increaseArousal(targetToken, amount);
+    ArousalManager.increaseArousal(targetToken.actor, amount);
   });
 });
 
