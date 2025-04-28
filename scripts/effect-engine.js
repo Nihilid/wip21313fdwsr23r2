@@ -5,6 +5,7 @@ import { EventSystem } from "./event-system.js";
 import { logDebug } from "./utils.js";
 import { UUID_DEFS } from "./uuid-defs.js";
 import { EventSystem } from "./event-system.js";
+import { EventSystem } from "./event-system.js";
 
 Hooks.once('ready', () => {
   EventSystem.on("effect.apply", ({ targetToken, type }) => {
@@ -21,6 +22,7 @@ Hooks.once('ready', () => {
     }
   });
 });
+
 
 export const EffectEngine = {
 
