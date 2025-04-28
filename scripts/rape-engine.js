@@ -66,5 +66,3 @@ export const RapeEngine = {
   }
 
 };
-
-// [D&Degenerates] ✅ RapeEngine fully event-based and using logDebug for logging.
