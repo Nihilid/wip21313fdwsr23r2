@@ -1,16 +1,8 @@
 // rape-engine.js
-// Handles penetration, rape state tracking, and escalation effects
-
-/**
- * RapeEngine manages forced penetration logic, state tracking, and effect escalation.
- * Integrates with the ArousalManager and CombatControl subsystems.
- */
-
-// rape-engine.js
 // [D&Degenerates] Manages rape-related mechanics: penetration resistance, fondle resistance, libido-scaled difficulty checks
 
 import { EventSystem } from "./event-system.js";
-import { clamp } from "./utils.js";
+import { clamp, logDebug } from "./utils.js";
 
 export const RapeEngine = {
 
@@ -22,7 +14,7 @@ export const RapeEngine = {
     const roll = await sourceActor.saves.fortitude.roll({ skipDialog: true });
 
     if (roll.total >= penetrationDC) {
-      console.log(`[D&Degenerates] ${sourceActor.name} successfully penetrates ${targetActor.name}`);
+      logDebug(`[D&Degenerates] ${sourceActor.name} successfully penetrates ${targetActor.name}`);
 
       // Emit internal cumshot event (handled by FertilityEngine)
       EventSystem.emit("InternalCumshot", { target: targetActor, amount: 1 });
@@ -37,7 +29,7 @@ export const RapeEngine = {
       EventSystem.emit("IncreaseArousal", { actor: targetActor, amount: 10 });
 
     } else {
-      console.log(`[D&Degenerates] ${sourceActor.name} fails to penetrate ${targetActor.name}`);
+      logDebug(`[D&Degenerates] ${sourceActor.name} fails to penetrate ${targetActor.name}`);
     }
   },
 
@@ -48,7 +40,7 @@ export const RapeEngine = {
     const roll = await sourceActor.saves.reflex.roll({ skipDialog: true });
 
     if (roll.total >= fondleDC) {
-      console.log(`[D&Degenerates] ${sourceActor.name} successfully fondles ${targetActor.name}'s ${region}`);
+      logDebug(`[D&Degenerates] ${sourceActor.name} successfully fondles ${targetActor.name}'s ${region}`);
 
       // Emit fondle event for flavor and stimulation effects
       EventSystem.emit("FondledRegion", { source: sourceActor, target: targetActor, region });
@@ -57,7 +49,7 @@ export const RapeEngine = {
       EventSystem.emit("IncreaseArousal", { actor: targetActor, amount: 5 });
 
     } else {
-      console.log(`[D&Degenerates] ${sourceActor.name} fails to fondle ${targetActor.name}'s ${region}`);
+      logDebug(`[D&Degenerates] ${sourceActor.name} fails to fondle ${targetActor.name}'s ${region}`);
     }
   },
 
@@ -75,4 +67,4 @@ export const RapeEngine = {
 
 };
 
-// [D&Degenerates] ✅ RapeEngine fully event-based and modular.
+// [D&Degenerates] ✅ RapeEngine fully event-based and using logDebug for logging.
