@@ -1,5 +1,5 @@
 import { BODY_MAP } from './bodymap.js';
-import { EXPOSURE_THRESHOLDS, exceedsExposureThreshold, getExposureTier } from './exposure-config.js';
+import { EXPOSURE_THRESHOLDS, exceedsExposureThreshold, getExposureTier } from './attire-exposure.js';
 
 // Light and Vision Types Definitions
 const LIGHT_LEVELS = {
