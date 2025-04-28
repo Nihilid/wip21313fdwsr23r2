@@ -18,10 +18,9 @@ import { getArousalThreshold, getStimDecayRate, getOrgasmResistanceDC, getDecayI
 import { clampValue, validateActor, updateBar, getBarValue, detectGender } from "./utils.js";
 import { BAR_MAPPING } from "./constants.js";
 import { FlavorEngine } from "./flavor-engine.js";
+import { EventSystem } from "./event-system.js";
 
 const MODULE_NAME = "dungeons-and-degenerates-pf2e";
-
-import { EventSystem } from "./event-system.js";
 
 Hooks.once('ready', () => {
   EventSystem.on("arousal.increase", ({ targetToken, amount }) => {
