@@ -5,6 +5,25 @@ import { playCummingAudio, playEjaculatingAudio } from "./sound-engine.js";
 
 const MODULE_NAME = "dungeons-and-degenerates-pf2e";
 
+import { EventSystem } from "./event-system.js";
+
+Hooks.once('ready', () => {
+  EventSystem.on("fondle", ({ sourceToken, targetToken }) => {
+    if (!sourceToken || !targetToken) return;
+    FlavorEngine.createFondleFlavor(sourceToken, targetToken);
+  });
+
+  EventSystem.on("rape", ({ sourceToken, targetToken }) => {
+    if (!sourceToken || !targetToken) return;
+    FlavorEngine.createRapeFlavor(sourceToken, targetToken);
+  });
+
+  EventSystem.on("wombfuck", ({ sourceToken, targetToken }) => {
+    if (!sourceToken || !targetToken) return;
+    FlavorEngine.createWombfuckFlavor(sourceToken, targetToken);
+  });
+});
+
 export class FlavorEngine {
   /**
    * Play wardrobe malfunction chat flavor when clothing slips.
