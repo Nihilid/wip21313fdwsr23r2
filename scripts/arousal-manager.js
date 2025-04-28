@@ -13,7 +13,6 @@
 */
 
 import { applyEffect, removeEffect } from "./effect-engine.js";
-import { getArousalThreshold, getStimDecayRate, getOrgasmResistanceDC, getDecayImmunityDuration } from "./settings-manager.js";
 import { getArousalThreshold, getStimDecayRate, getOrgasmResistanceDC, getDecayImmunityDuration } from "./settings.js";
 import { clampValue, validateActor, updateBar, getBarValue, detectGender } from "./utils.js";
 import { BAR_MAPPING } from "./constants.js";
